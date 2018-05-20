@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
-#from Tkinter.filedialog import askdirectory
+
 from MyQR.myqr import run
-#from urllib import request, parse
 from urllib3 import request
 from bs4 import BeautifulSoup
-#import Tkinter.messagebox as msgbox
+from selenium import webdriver
 import Tkinter as tk
 import webbrowser
 import re
@@ -28,6 +27,7 @@ Returns:
 Modify:
 	2017-05-09
 """
+
 class APP:
 	def __init__(self, width = 500, height = 300):
 		self.w = width
@@ -142,49 +142,16 @@ class APP:
 			if self.v.get() == 1:
 				#视频链接获取
 				ip = self.url.get()
-				#视频链接加密
-				#ip = parse.quote_plus(ip)
+
 				#浏览器打开
 				webbrowser.open(port_1 + self.url.get())
 			elif self.v.get() == 2:
 				#链接获取
 				ip = self.url.get()
-				#链接加密
-				#ip = parse.quote_plus(ip)
 
 				#获取time、key、url
 				get_url = 'http://www.vipjiexi.com/x2/tong.php?url=%s' % ip 
-				# get_url_head = {
-				# 	'User-Agent':'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',
-				# 	'Referer':'http://www.vipjiexi.com/',
-				# }
-				# get_url_req = request.Request(url = get_url, headers = get_url_head)
-				# get_url_response = request.urlopen(get_url_req)
-				# get_url_html = get_url_response.read().decode('utf-8')
-				# bf = BeautifulSoup(get_url_html, 'lxml')
-				# a = str(bf.find_all('script'))
-				# pattern = re.compile('"api.php", {"time":"(\d+)", "key": "(.+)", "url": "(.+)","type"', re.IGNORECASE)
-				# string = pattern.findall(a)
-				# now_time = string[0][0]
-				# now_key = string[0][1]
-				# now_url = string[0][2] 
 
-				# #请求播放,获取Success = 1
-				# get_movie_url = 'http://www.vipjiexi.com/x2/api.php'
-				# get_movie_data = {
-				# 	'key':'%s' % now_key,
-				# 	'time':'%s' % now_time,
-				# 	'type':'',
-				# 	'url':'%s' % now_url
-				# }
-				# get_movie_head = {
-				# 	'User-Agent':'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',
-				# 	'Referer':'http://www.vipjiexi.com/x2/tong.php?',
-				# 	'url':'%s' % ip,
-				# }
-				# get_movie_req = request.Request(url = get_movie_url, headers = get_movie_head)
-				# get_movie_data = parse.urlencode(get_movie_data).encode('utf-8')
-				# get_movie_response = request.urlopen(get_movie_req, get_movie_data)
 				#请求之后立刻打开
 				webbrowser.open(get_url)
 
@@ -212,10 +179,11 @@ class APP:
 			#ip = parse.quote_plus(ip)
 
 			#获取保存视频的url
-			get_url = 'http://www.sfsft.com/index.php?url=%s' % ip 
+			get_url = 'http://www.sfsft.com/index.php?url=%s' % ip
+
 			head = {
-				'User-Agent':'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',
-				'Referer':'http://www.sfsft.com/index.php?url=%s' % ip
+				'User-Agent': 'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19',
+				'Referer': 'http://www.sfsft.com/index.php?url=%s' % ip
 			}
 			get_url_req = request.Request(url = get_url, headers = head)
 			get_url_response = request.urlopen(get_url_req)
@@ -258,29 +226,24 @@ class APP:
 		if re.match(r'^https?:/{2}\w.+$', self.url.get()):
 			#视频链接获取
 			ip = self.url.get()
-			#视频链接加密
-			#ip = parse.quote_plus(ip)
 
 			url = 'http://www.wmxz.wang/video.php?url=%s' % ip
 			words = url
-			images_pwd = os.getcwd() + '\Images\\'
-			png_path = images_pwd + 'bg.png'
-			qr_name = 'qrcode.png'
-			qr_path = images_pwd + 'qrcode.png'
+			print("Please copy the following link to the qr code generation website and generate the qr code scan.")
+			print(words)
 
-			run(words = words, picture = png_path, save_name = qr_name, save_dir = images_pwd)
-
-			top = tk.Toplevel(self.root)
-			img = tk.PhotoImage(file = qr_path)
-			text_label = tk.Label(top, fg = 'red', font = ('楷体',15), text = "手机浏览器扫描二维码，在线观看视频！")
-			img_label = tk.Label(top, image = img)
-			text_label.pack()
-			img_label.pack()
-			top.mainloop()
+			#利用生成二维码的网站  words二维码内容， img为二维码图片
+			browser = webdriver.Firefox(executable_path='D:\\Python27\\Scripts\\geckodriver.exe')
+			browser.get("https://cli.im/url")
+			time.sleep(5)
+			browser.find_element_by_xpath('//*[@id="url_content"]').send_keys(words)
+			time.sleep(5)
+			browser.find_element_by_xpath('//*[@id="click-create"]').click()
 
 		else:
 			print("1")
-			#msgbox.showerror(title='错误',message='视频链接地址无效，请重新输入！')
+
+
 
 	"""
 	函数说明:tkinter窗口居中
